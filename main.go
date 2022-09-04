@@ -1,6 +1,7 @@
 package main
 
 import (
+	"encoding/json"
 	"fmt"
 	"log"
 	"os"
@@ -23,33 +24,37 @@ const help = `
 
 	`
 
-type task struct {
+/* 
+Example tasks list root json - 
+{
+    "tasks": [
+        {
+            "id": 102,
+            "task": "wake up at 7am",
+            "done": false
+        },
+        {
+            "id": 103,
+            "task": "sleep at 11pm",
+            "done": false
+        }
+    ]
+}
+*/
+
+type Task struct {
 	ID   int    `json:"id"`
 	Task string `json:"task"`
 	Done bool   `json:"done"`
 }
 
-var taskList = []task{
-	{
-		ID:   1,
-		Task: "wake up at 7.30",
-		Done: false,
-	},
-	{
-		ID:   2,
-		Task: "sleep at 12",
-		Done: false,
-	},
-	{
-		ID:   3,
-		Task: "eat healthy",
-		Done: true,
-	},
+type Root struct {
+    Tasks []Task    `json:"tasks"`
 }
 
 func main() {
-
-	if len(os.Args) == 1 {
+    argsLen := len(os.Args)
+	if argsLen == 1 {
 		printHelp()
 		return
 	}
@@ -57,23 +62,34 @@ func main() {
 	args := os.Args[1:]
 
 	execute(args)
-	err := CreateIfNotExist()
-	if err != nil {
-		log.Fatal(err)
-	}
 }
 
 func execute(args []string) {
+	f, err := CreateIfNotExist()
+	if err != nil {
+		log.Fatal(err)
+	}
+    defer f.Close()
+
 	cmd := args[0]
 	if cmd == list_cmd {
-		listTaks()
+		listTaks(f)
 	}
 }
 
-func listTaks() {
-	for _, v := range taskList {
-		fmt.Printf("%v        %v. %v \n", isDone(v.Done), v.ID, v.Task)
-	}
+func listTaks(f *os.File) {
+    // reading it all in one go, else we need to use buffered reader
+    r, err := os.ReadFile(f.Name())
+    if err != nil {
+        fmt.Print(err)
+        return
+    }
+    var root Root
+    json.Unmarshal(r, &root)
+    if len(root.Tasks) == 0 {
+        fmt.Println("No tasks yet, use add to add tasks")
+    }
+    return
 }
 
 func isDone(status bool) string {
