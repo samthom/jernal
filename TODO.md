@@ -1,11 +1,9 @@
 # jernal cli tool
 
-## Commands
-[ ] Add tasks
-[ ] List tasks 
-[ ] Mark tasks as done
-[ ] Delete tasks
 
-### List tasks
-[X] Create the _todo.json_ file if not exist already and input the root structure  of the data.
-[ ] Have to list all tasks from the file and handle if the file is empty or in an invalid format
+### Tasks
+- File system to create a file with the date and meta 
+    - Create the file with the date as name if it doesn't not exist or first time opening the program.
+    - Adding time stamp to the file when it is opened.
+- Options 
+    - help
